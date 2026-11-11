@@ -6,7 +6,10 @@
     "task": "count",
     "max_new_tokens": 4096,
     "box_match": "greedy one-to-one IoU>=0.5",
-    "size_buckets_px2": {"small": "<32^2", "medium": "32^2-96^2", "large": ">=96^2"}
+    "size_buckets_px2": {"small": "<32^2", "medium": "32^2-96^2", "large": ">=96^2"},
+    "empty_prompts": 10439,
+    "positive_prompts": 10439,
+    "pooling": "scripts/pool_val_metrics.py weights count rates by n, empty/positive accuracy by neg_n/pos_n, and mean IoU by hits. hits = box_recall_iou50 * gt_boxes."
   },
   "methods": {
     "sft_exp3": {
@@ -31,6 +34,40 @@
         "medium": {"P": 0.2637, "R": 0.2836, "F1": 0.2733},
         "large": {"P": 0.5044, "R": 0.5658, "F1": 0.5334}
       }
+    },
+    "sft_exp1": {
+      "name": "SFT scheme 1 (LLM only)",
+      "adapter": "lora_exp1/epoch_0_step_2819",
+      "n": 20878,
+      "count_exact": 0.7279,
+      "count_mae": 1.512,
+      "neg_acc": 0.9561,
+      "pos_acc": 0.4998,
+      "format_ok": 0.9869,
+      "pred_boxes": 55097,
+      "hits": 21992,
+      "precision": 0.3992,
+      "recall": 0.4361,
+      "f1": 0.4168,
+      "mean_matched_iou": 0.812,
+      "small_recall": 0.1760
+    },
+    "grpo_f1_428": {
+      "name": "GRPO 428 steps, box term = F1",
+      "start": "sft_exp3",
+      "n": 20878,
+      "count_exact": 0.7272,
+      "count_mae": 1.485,
+      "neg_acc": 0.9354,
+      "pos_acc": 0.5190,
+      "format_ok": 0.9795,
+      "pred_boxes": 72723,
+      "hits": 25303,
+      "precision": 0.3479,
+      "recall": 0.5018,
+      "f1": 0.4109,
+      "mean_matched_iou": 0.809,
+      "small_recall": 0.3501
     },
     "grpo_f1_1000": {
       "name": "GRPO 1000 steps, box term = F1",
