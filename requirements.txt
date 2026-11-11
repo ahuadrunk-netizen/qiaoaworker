@@ -1,0 +1,9 @@
+# Training and eval target Ascend NPU + torch_npu inside the project container.
+# CPU-only inspection of jsonl / metrics does not need those wheels.
+transformers>=4.56
+peft
+deepspeed
+pillow
+pyyaml
+tqdm
+minio

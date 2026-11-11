@@ -1,0 +1,98 @@
+{
+  "protocol": {
+    "split": "OmniGuard-68 valid counting jsonl",
+    "n_images": 20878,
+    "n_gt_boxes": 50425,
+    "task": "count",
+    "max_new_tokens": 4096,
+    "box_match": "greedy one-to-one IoU>=0.5",
+    "size_buckets_px2": {"small": "<32^2", "medium": "32^2-96^2", "large": ">=96^2"}
+  },
+  "methods": {
+    "sft_exp3": {
+      "name": "SFT scheme 3 (LLM+merger+vision last 8)",
+      "adapter": "lora_exp3/epoch_0_step_2819",
+      "n": 20878,
+      "count_exact": 0.7298,
+      "count_mae": 1.507,
+      "neg_acc": 0.9574,
+      "pos_acc": 0.5023,
+      "format_ok": 0.9866,
+      "pred_boxes": 55658,
+      "hits": 22190,
+      "precision": 0.3987,
+      "recall": 0.4401,
+      "f1": 0.4184,
+      "mean_matched_iou": 0.810,
+      "over_count_per_image": 0.37,
+      "under_count_per_image": 1.14,
+      "size": {
+        "small": {"P": 0.1682, "R": 0.1852, "F1": 0.1763},
+        "medium": {"P": 0.2637, "R": 0.2836, "F1": 0.2733},
+        "large": {"P": 0.5044, "R": 0.5658, "F1": 0.5334}
+      }
+    },
+    "grpo_f1_1000": {
+      "name": "GRPO 1000 steps, box term = F1",
+      "start": "sft_exp3",
+      "n": 20878,
+      "count_exact": 0.7232,
+      "count_mae": 1.428,
+      "neg_acc": 0.9275,
+      "pos_acc": 0.5189,
+      "format_ok": 0.9769,
+      "pred_boxes": 78848,
+      "hits": 28341,
+      "precision": 0.3594,
+      "recall": 0.5620,
+      "f1": 0.4385,
+      "mean_matched_iou": 0.809,
+      "over_count_per_image": 0.51,
+      "under_count_per_image": 0.92,
+      "size": {
+        "small": {"P": 0.1372, "R": 0.3803, "F1": 0.2017},
+        "medium": {"P": 0.3040, "R": 0.5216, "F1": 0.3841},
+        "large": {"P": 0.4541, "R": 0.6071, "F1": 0.5196}
+      }
+    },
+    "grpo_boxpen_1000": {
+      "name": "GRPO 1000 steps, box term = (matched-extra)/gt",
+      "start": "grpo_f1_1000",
+      "same_prompt_order": true,
+      "n": 20878,
+      "count_exact": 0.7312,
+      "count_mae": 1.218,
+      "neg_acc": 0.9551,
+      "pos_acc": 0.5072,
+      "format_ok": 0.9928,
+      "pred_boxes": 48613,
+      "hits": 26170,
+      "precision": 0.5383,
+      "recall": 0.5190,
+      "f1": 0.5285,
+      "mean_matched_iou": 0.815,
+      "over_count_per_image": 0.29,
+      "under_count_per_image": 0.93,
+      "size": {
+        "small": {"P": 0.3553, "R": 0.3333, "F1": 0.3440},
+        "medium": {"P": 0.4725, "R": 0.4657, "F1": 0.4691},
+        "large": {"P": 0.6005, "R": 0.5725, "F1": 0.5862}
+      }
+    },
+    "grpo_boxpen2_1000_partial": {
+      "name": "Continue new-reward GRPO another 1000 steps",
+      "note": "2 of 3 val shards finished (n=13919). Not a full-val number.",
+      "n": 13919,
+      "count_exact": 0.7284,
+      "count_mae": 1.170,
+      "neg_acc": 0.9596,
+      "pos_acc": 0.4968,
+      "format_ok": 0.9953,
+      "pred_boxes": 29158,
+      "hits": 17561,
+      "precision": 0.6023,
+      "recall": 0.5281,
+      "f1": 0.5628
+    }
+  }
+}

@@ -1,0 +1,52 @@
+# 实验 3：LoRA — LLM + Merger + Vision Encoder 后 8 层
+#   LLM 64 层：self_attn(q/k/v/o) 16 层 + linear_attn(in_proj_*/out_proj) 48 层 + MLP 64 层
+#   lm_head 也挂 LoRA：<|ref|>/<|box|> 是新加 token（id 248077+），
+#   其 embedding/lm_head 行是随机初始化的，不挂 LoRA 模型学不会输出它们。
+#   额外给 visual.merger.linear_fc1/fc2 挂 LoRA（视觉特征 → 5120 维语言空间的接口）。
+#   Vision blocks 27 层仍然冻结。
+# 2×NPU (Phy 2,3) ZeRO-3
+model_name_or_path: "/workspace/zzy/modelscope/Qwen3.8-27B"
+base_model_path: "/workspace/zzy/modelscope/Qwen3.8-27B"
+# PEFT 已把非 LoRA 参数全部冻结；这里保持 false，否则会把 vision 下的
+# LoRA 参数（实验 2 的 merger）一并冻掉。
+freeze_vision_tower: false
+torch_dtype: "bfloat16"
+
+lora:
+  enabled: true
+  r: 64
+  alpha: 128
+  dropout: 0.05
+  llm_attn: true          # q/k/v/o_proj + in_proj_*/out_proj
+  llm_mlp: true           # gate/up/down_proj
+  lm_head: true
+  merger: true            # ← 实验 2：视觉→语言的投影接口也挂
+  vision_last_n: 8        # ← 视觉 encoder 27 层里的后 8 层
+
+datasets:
+  - path: "/workspace/zzy/python/model_train/Qwen3.8/sft_ship_lora/data/jsonl/train.jsonl"
+    image_root: "/workspace/zzy/python/model_train/Qwen3.8/sft_ship_lora"
+    task_type: "counting"
+    weight: 1.0
+
+total_samples: 22313
+batch_size: 1
+gradient_accumulation_steps: 16   # 2 卡 × 1 × 16 = 全局 batch 32（与 exp1/exp2 一致）
+epochs: 1
+learning_rate: 1.0e-4             # LoRA 用比全参高一个量级
+weight_decay: 0.01
+warmup_ratio: 0.03
+grad_clip: 1.0
+max_length: 8192
+image_size: 1024
+image_min_pixels: 12544
+image_max_pixels: 2007040
+tile:
+  enabled: false
+num_workers: 0
+log_steps: 10
+save_steps: 0
+save_optim_steps: 200             # LoRA 模式只存 adapter（~0.7GB）
+keep_checkpoints: 4
+zero_stage: 3
+offload_optimizer: "cpu"
